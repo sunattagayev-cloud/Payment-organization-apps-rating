@@ -6092,6 +6092,19 @@
         },
         {
             "Davr": "2025_11",
+            "Tashkilot nomi": "NATIONAL PAY",
+            "1": 1,
+            "2": 0,
+            "3": 4,
+            "4": 2,
+            "5": 62,
+            "Jami": 69,
+            "Gorizontal baho": 95.94,
+            "Vertikal baho": 52.94,
+            "Yakuniy ball": 74.44
+        },
+        {
+            "Davr": "2025_11",
             "Tashkilot nomi": "MARKETPLACE TRADING",
             "1": 41,
             "2": 4,
@@ -6100,8 +6113,8 @@
             "5": 344,
             "Jami": 405,
             "Gorizontal baho": 89.4,
-            "Vertikal baho": 58.87,
-            "Yakuniy ball": 74.14
+            "Vertikal baho": 58.36,
+            "Yakuniy ball": 73.88
         },
         {
             "Davr": "2025_11",
@@ -6113,8 +6126,8 @@
             "5": 3,
             "Jami": 3,
             "Gorizontal baho": 100.0,
-            "Vertikal baho": 46.57,
-            "Yakuniy ball": 73.28
+            "Vertikal baho": 45.56,
+            "Yakuniy ball": 72.78
         },
         {
             "Davr": "2025_11",
@@ -6165,8 +6178,8 @@
             "5": 24,
             "Jami": 38,
             "Gorizontal baho": 74.8,
-            "Vertikal baho": 54.04,
-            "Yakuniy ball": 64.42
+            "Vertikal baho": 51.75,
+            "Yakuniy ball": 63.27
         },
         {
             "Davr": "2025_11",
@@ -6178,8 +6191,8 @@
             "5": 2,
             "Jami": 2,
             "Gorizontal baho": 0.0,
-            "Vertikal baho": 45.56,
-            "Yakuniy ball": 22.78
+            "Vertikal baho": 44.55,
+            "Yakuniy ball": 22.27
         },
         {
             "Davr": "2025_12",
@@ -6300,6 +6313,19 @@
         },
         {
             "Davr": "2025_12",
+            "Tashkilot nomi": "NATIONAL PAY",
+            "1": 1,
+            "2": 0,
+            "3": 4,
+            "4": 2,
+            "5": 62,
+            "Jami": 69,
+            "Gorizontal baho": 95.94,
+            "Vertikal baho": 52.94,
+            "Yakuniy ball": 74.44
+        },
+        {
+            "Davr": "2025_12",
             "Tashkilot nomi": "MARKETPLACE TRADING",
             "1": 44,
             "2": 4,
@@ -6308,8 +6334,8 @@
             "5": 372,
             "Jami": 437,
             "Gorizontal baho": 89.4,
-            "Vertikal baho": 58.87,
-            "Yakuniy ball": 74.14
+            "Vertikal baho": 58.36,
+            "Yakuniy ball": 73.88
         },
         {
             "Davr": "2025_12",
@@ -6321,8 +6347,8 @@
             "5": 3,
             "Jami": 3,
             "Gorizontal baho": 100.0,
-            "Vertikal baho": 46.57,
-            "Yakuniy ball": 73.28
+            "Vertikal baho": 45.56,
+            "Yakuniy ball": 72.78
         },
         {
             "Davr": "2025_12",
@@ -6373,8 +6399,8 @@
             "5": 24,
             "Jami": 38,
             "Gorizontal baho": 74.8,
-            "Vertikal baho": 54.04,
-            "Yakuniy ball": 64.42
+            "Vertikal baho": 51.75,
+            "Yakuniy ball": 63.27
         }
     ],
     "Ilovalar faolligi": [
@@ -8404,9 +8430,9 @@
             "Ilova nomi": "MilliyPay",
             "Ilova yoshi bo'yicha ball": 94.45,
             "Yuklanishlar soni bo'yicha ball": 96.34,
-            "Kunlik izohlar soni bo'yicha ball": 81.64,
-            "Izohlar salmog'i bo'yicha ball": 64.23,
-            "Ilova faoligi bo'yicha yakuniy ball": 89.43
+            "Kunlik izohlar soni bo'yicha ball": 81.68,
+            "Izohlar salmog'i bo'yicha ball": 64.28,
+            "Ilova faoligi bo'yicha yakuniy ball": 89.45
         },
         {
             "Davr": "2025_11",
@@ -8614,9 +8640,9 @@
             "Ilova nomi": "MilliyPay",
             "Ilova yoshi bo'yicha ball": 94.45,
             "Yuklanishlar soni bo'yicha ball": 95.98,
-            "Kunlik izohlar soni bo'yicha ball": 81.91,
-            "Izohlar salmog'i bo'yicha ball": 64.54,
-            "Ilova faoligi bo'yicha yakuniy ball": 89.41
+            "Kunlik izohlar soni bo'yicha ball": 81.95,
+            "Izohlar salmog'i bo'yicha ball": 64.59,
+            "Ilova faoligi bo'yicha yakuniy ball": 89.42
         },
         {
             "Davr": "2025_12",
@@ -10894,9 +10920,9 @@
             "Davr": "2025_11",
             "Tashkilot nomi": "NATIONAL PAY",
             "Google Play": 79.4,
-            "App Store": 21.77,
-            "Faollik": 89.43,
-            "Yakuniy ball": 80.4,
+            "App Store": 74.44,
+            "Faollik": 89.45,
+            "Yakuniy ball": 80.35,
             "Reyting": "(uz) BBB",
             "Reyting tavsifi": "Juda yaxshi"
         },
@@ -10934,9 +10960,9 @@
             "Davr": "2025_11",
             "Tashkilot nomi": "MARKETPLACE TRADING",
             "Google Play": 74.02,
-            "App Store": 74.14,
+            "App Store": 73.88,
             "Faollik": 88.57,
-            "Yakuniy ball": 75.49,
+            "Yakuniy ball": 75.46,
             "Reyting": "(uz) BB",
             "Reyting tavsifi": "Yaxshiroq"
         },
@@ -10974,7 +11000,7 @@
             "Davr": "2025_11",
             "Tashkilot nomi": "CENTER FOR DIGITAL TECHNOLOGY AND INNOVATION",
             "Google Play": 64.54,
-            "App Store": 22.78,
+            "App Store": 22.27,
             "Faollik": 87.17,
             "Yakuniy ball": 66.72,
             "Reyting": "(uz) B",
@@ -10984,9 +11010,9 @@
             "Davr": "2025_11",
             "Tashkilot nomi": "LIMON PAY",
             "Google Play": 64.23,
-            "App Store": 64.42,
+            "App Store": 63.27,
             "Faollik": 86.04,
-            "Yakuniy ball": 66.43,
+            "Yakuniy ball": 66.33,
             "Reyting": "(uz) B",
             "Reyting tavsifi": "Yaxshi"
         },
@@ -11004,9 +11030,9 @@
             "Davr": "2025_11",
             "Tashkilot nomi": "SMART MARKETPLACE",
             "Google Play": 58.11,
-            "App Store": 73.28,
+            "App Store": 72.78,
             "Faollik": 83.96,
-            "Yakuniy ball": 61.4,
+            "Yakuniy ball": 61.38,
             "Reyting": "(uz) CCC",
             "Reyting tavsifi": "Deyarli yaxshi"
         },
@@ -11114,9 +11140,9 @@
             "Davr": "2025_12",
             "Tashkilot nomi": "NATIONAL PAY",
             "Google Play": 77.94,
-            "App Store": 21.77,
-            "Faollik": 89.41,
-            "Yakuniy ball": 79.09,
+            "App Store": 74.44,
+            "Faollik": 89.42,
+            "Yakuniy ball": 79.05,
             "Reyting": "(uz) BBB",
             "Reyting tavsifi": "Juda yaxshi"
         },
@@ -11144,9 +11170,9 @@
             "Davr": "2025_12",
             "Tashkilot nomi": "MARKETPLACE TRADING",
             "Google Play": 75.11,
-            "App Store": 74.14,
+            "App Store": 73.88,
             "Faollik": 88.52,
-            "Yakuniy ball": 76.31,
+            "Yakuniy ball": 76.27,
             "Reyting": "(uz) BBB",
             "Reyting tavsifi": "Juda yaxshi"
         },
@@ -11194,9 +11220,9 @@
             "Davr": "2025_12",
             "Tashkilot nomi": "LIMON PAY",
             "Google Play": 64.27,
-            "App Store": 64.42,
+            "App Store": 63.27,
             "Faollik": 85.95,
-            "Yakuniy ball": 66.45,
+            "Yakuniy ball": 66.35,
             "Reyting": "(uz) B",
             "Reyting tavsifi": "Yaxshi"
         },
@@ -11204,9 +11230,9 @@
             "Davr": "2025_12",
             "Tashkilot nomi": "SMART MARKETPLACE",
             "Google Play": 59.33,
-            "App Store": 73.28,
+            "App Store": 72.78,
             "Faollik": 83.9,
-            "Yakuniy ball": 62.4,
+            "Yakuniy ball": 62.38,
             "Reyting": "(uz) CCC",
             "Reyting tavsifi": "Deyarli yaxshi"
         },
