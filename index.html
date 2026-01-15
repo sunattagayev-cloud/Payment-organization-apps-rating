@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Organization Apps Rating Dashboard</title>
+    
+    <!-- Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+    <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
+    
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary: #2563eb;       
+            --bg-body: #f1f5f9;
+            --bg-card: #ffffff;
+            --text-main: #0f172a;
+            --text-secondary: #64748b;
+            --border: #e2e8f0;
+            --radius: 12px;
+            --shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
+            --warning: #f59e0b;
+        }
+
+        body.dark-mode {
+            --bg-body: #0f172a;
+            --bg-card: #1e293b;
+            --text-main: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border: #334155;
+            --primary: #60a5fa;
+            --shadow: 0 4px 6px -1px rgba(0,0,0,0.3);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            margin: 0;
+            padding-bottom: 20px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* Loading Overlay */
+        .loading-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-body); z-index: 9999;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            transition: opacity 0.5s;
+        }
+        .spinner {
+            width: 50px; height: 50px; border: 5px solid var(--border);
+            border-top-color: var(--primary); border-radius: 50%;
+            animation: spin 1s linear infinite; margin-bottom: 15px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Header */
+        .glass-header {
+            background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(8px);
+            position: sticky; top: 0; z-index: 100;
+            padding: 15px 0; border-bottom: 1px solid var(--border);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        body.dark-mode .glass-header { background: rgba(30, 41, 59, 0.95); }
+
+        .header-inner {
+            max-width: 1400px; margin: 0 auto; padding: 0 20px;
+            display: flex; justify-content: space-between; align-items: center;
+            flex-wrap: wrap; gap: 10px;
+        }
+        .brand-box h1 { margin: 0; font-size: 1.3rem; color: var(--primary); display: flex; align-items: center; gap: 10px; font-weight: 700; white-space: nowrap;}
+        .source-badge { font-size: 0.75rem; color: var(--text-secondary); display: block; margin-top: 4px; font-weight: 500;}
+
+        .btn-icon {
+            background: transparent; border: 1px solid var(--border); color: var(--text-main);
+            width: 36px; height: 36px; border-radius: 8px; cursor: pointer; transition: 0.2s;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .btn-icon:hover { background: var(--border); color: var(--primary); }
+        .active-lang { background: var(--primary) !important; color: white !important; border-color: var(--primary) !important; }
+
+        /* Layout */
+        .container {
+            max-width: 1400px; margin: 25px auto; padding: 0 20px;
+            display: grid; grid-template-columns: 320px 1fr; gap: 25px;
+        }
+
+        .mobile-filter-btn {
+            display: none;
+            width: 100%; 
+            padding: 12px; 
+            background: var(--bg-card); 
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            color: var(--primary);
+            font-weight: 600;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            cursor: pointer;
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 1024px) { 
+            .container { display: block; }
+            .sidebar { display: none; margin-bottom: 25px; }
+            .sidebar.active { display: block; animation: slideDown 0.3s ease-out; }
+            .mobile-filter-btn { display: flex; }
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 600px) {
+            .header-inner { flex-direction: column; align-items: flex-start; }
+            .header-inner > div { width: 100%; justify-content: space-between; display: flex; }
+            .brand-box { margin-bottom: 10px; }
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-card); border-radius: var(--radius); padding: 20px;
+            border: 1px solid var(--border); box-shadow: var(--shadow); margin-bottom: 20px;
+        }
+        
+        .sidebar-inner { position: sticky; top: 85px; height: fit-content; }
+        .form-select {
+            width: 100%; padding: 10px; border-radius: 8px;
+            border: 1px solid var(--border); background: var(--bg-body); color: var(--text-main);
+            margin-bottom: 12px; outline: none; box-sizing: border-box; 
+            font-family: 'Inter', sans-serif; font-size: 0.9rem;
+        }
+        
+        /* Promo Card */
+        .promo-card {
+            background: linear-gradient(135deg, var(--primary), #1e40af);
+            color: white; text-align: center; position: relative; overflow: hidden; padding-bottom: 15px; margin-bottom: 20px;
+        }
+        .promo-logo-img { max-width: 150px; margin-bottom: 15px; padding: 5px; }
+        .promo-bg-circle {
+            position: absolute; width: 120px; height: 120px; background: rgba(255,255,255,0.1);
+            border-radius: 50%; top: -30px; right: -30px;
+        }
+        .slogan-box {
+            min-height: 60px; display: flex; align-items: center; justify-content: center;
+            font-size: 0.9rem; font-weight: 600; font-style: italic; margin: 10px 0;
+            padding: 0 10px; opacity: 0; transition: opacity 0.5s ease-in-out;
+            line-height: 1.4;
+        }
+        .slogan-visible { opacity: 1; }
+        
+        .social-row { display: flex; gap: 10px; justify-content: center; margin-top: 10px; flex-wrap: wrap;}
+        .social-btn {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: rgba(255,255,255,0.2); color: white; border: none;
+            padding: 8px 12px; border-radius: 8px; text-decoration: none;
+            font-size: 0.85rem; transition: 0.2s; font-weight: 500;
+        }
+        .social-btn:hover { background: rgba(255,255,255,0.3); transform: translateY(-1px); }
+
+        .contact-info {
+            font-size: 0.75rem; margin-top: 15px; border-top: 1px dashed rgba(255,255,255,0.3);
+            padding-top: 10px; opacity: 0.9; font-style: italic;
+        }
+
+        /* Indicators */
+        .ind-item { margin-bottom: 15px; }
+        .ind-head { display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 5px; color: var(--text-secondary); }
+        .progress-track { width: 100%; height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+        .progress-fill { height: 100%; border-radius: 4px; transition: width 0.8s ease; }
+
+        /* KPI Layout */
+        .kpi-aligned-row {
+            display: grid; grid-template-columns: 2fr 1fr; gap: 25px; margin-bottom: 25px;
+        }
+        @media (max-width: 900px) { .kpi-aligned-row { grid-template-columns: 1fr; gap: 15px; } }
+
+        .kpi-group-left { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; }
+        @media (max-width: 900px) { .kpi-group-left { gap: 15px; } }
+        @media (max-width: 480px) { .kpi-group-left { gap: 10px; } .stat-card { padding: 15px; } }
+
+        .kpi-group-right .stat-card { height: 100%; box-sizing: border-box; }
+
+        .stat-card {
+            background: var(--bg-card); padding: 20px; border-radius: var(--radius);
+            border: 1px solid var(--border); display: flex; align-items: flex-start; justify-content: space-between;
+            box-shadow: var(--shadow); height: 100%; box-sizing: border-box;
+        }
+        .stat-icon {
+            width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem;
+            flex-shrink: 0; margin-left: 10px;
+        }
+
+        /* Charts */
+        .charts-row { display: grid; grid-template-columns: 2fr 1fr; gap: 25px; margin-bottom: 25px; }
+        @media (max-width: 900px) { .charts-row { grid-template-columns: 1fr; gap: 15px; } }
+        .chart-container { position: relative; height: 320px; width: 100%; }
+        @media (max-width: 600px) { .chart-container { height: 260px; } }
+
+        /* Table & Badges */
+        .table-responsive { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius); -webkit-overflow-scrolling: touch; }
+        table { width: 100%; border-collapse: collapse; min-width: 900px; }
+        @media (max-width: 600px) { table { min-width: 800px; font-size: 0.85rem; } th, td { padding: 8px 10px; } }
+
+        th, td { padding: 12px 15px; border-bottom: 1px solid var(--border); font-size: 0.9rem; vertical-align: middle; }
+        th { background: var(--bg-body); font-weight: 600; color: var(--text-secondary); white-space: nowrap; cursor: pointer; text-align: left;}
+        th:hover { background: rgba(0,0,0,0.05); }
+        th.text-center, td.text-center { text-align: center; }
+
+        /* Interactive Table Cells */
+        .clickable-cell {
+            cursor: pointer;
+            color: var(--primary);
+            font-weight: 500;
+            transition: color 0.2s;
+            text-decoration: underline;
+            text-decoration-color: transparent;
+            text-underline-offset: 3px;
+        }
+        .clickable-cell:hover {
+            color: var(--warning);
+            text-decoration-color: var(--warning);
+        }
+        .bank-name-cell {
+            cursor: pointer;
+            color: var(--text-main);
+            transition: color 0.2s;
+        }
+        .bank-name-cell:hover {
+            color: var(--primary);
+        }
+
+        .rating-badge { padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 0.8rem; color: #fff; display: inline-block; min-width: 60px; text-align: center; }
+        
+        .grade-AAA { background-color: #166534; } 
+        .grade-AA  { background-color: #22c55e; } 
+        .grade-A   { background-color: #3b82f6; } 
+        .grade-BBB { background-color: #0ea5e9; } 
+        .grade-BB  { background-color: #f59e0b; } 
+        .grade-B   { background-color: #f97316; } 
+        .grade-CCC { background-color: #ef4444; } 
+        .grade-CC  { background-color: #dc2626; } 
+        .grade-C   { background-color: #b91c1c; } 
+        .grade-D   { background-color: #991b1b; } 
+
+        .scale-table-wrap { font-size: 0.8rem; }
+        .scale-table-wrap table { min-width: unset; width: 100%; }
+        .scale-table-wrap th, .scale-table-wrap td { padding: 8px; }
+        .scale-badge-small {
+            padding: 2px 6px; font-size: 0.7rem; border-radius: 4px; color: white;
+            font-weight: 600; display: inline-block; width: 55px; text-align: center;
+        }
+
+        .legal-disclaimer {
+            font-size: 0.7rem; color: var(--text-secondary); 
+            line-height: 1.4; opacity: 0.8; margin-top: 20px; font-style: italic; text-align: center;
+        }
+
+        .footer { text-align: center; padding: 25px; color: var(--text-secondary); font-size: 0.85rem; border-top: 1px solid var(--border); margin-top: 20px; background: var(--bg-card); }
+
+        /* MODAL (Suzuvchi Ekran) Styles */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); backdrop-filter: blur(5px);
+            z-index: 1000; display: none; justify-content: center; align-items: center;
+            opacity: 0; transition: opacity 0.3s;
+        }
+        .modal-overlay.active { display: flex; opacity: 1; }
+        .modal-content {
+            background: var(--bg-card); width: 90%; max-width: 500px;
+            border-radius: var(--radius); padding: 25px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            position: relative; transform: translateY(20px); transition: transform 0.3s;
+            max-height: 90vh; overflow-y: auto; color: var(--text-main);
+        }
+        .modal-overlay.active .modal-content { transform: translateY(0); }
+        .modal-close {
+            position: absolute; top: 15px; right: 15px;
+            background: transparent; border: none; font-size: 1.2rem;
+            color: var(--text-secondary); cursor: pointer;
+        }
+        .modal-close:hover { color: var(--text-main); }
+        .modal-header { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 15px; }
+        .modal-logo { width: 60px; height: 60px; object-fit: contain; border-radius: 12px; border: 1px solid var(--border); padding: 2px;}
+        .modal-title h3 { margin: 0; font-size: 1.2rem; color: var(--primary); }
+        .modal-title span { font-size: 0.85rem; color: var(--text-secondary); }
+        
+        .modal-links { display: grid; gap: 10px; }
+        .modal-link-btn {
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            padding: 12px; border-radius: 8px; text-decoration: none; font-weight: 500;
+            transition: 0.2s; border: 1px solid var(--border);
+        }
+        .link-google { background: #e8f0fe; color: #1a73e8; border-color: #d2e3fc; }
+        .link-apple { background: #f5f5f7; color: #1d1d1f; border-color: #d2d2d7; }
+        .link-google:hover, .link-apple:hover { filter: brightness(0.95); transform: translateY(-1px); }
+        
+        .detail-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px dashed var(--border); }
+        .detail-label { color: var(--text-secondary); font-size: 0.9rem; }
+        .detail-value { font-weight: 600; color: var(--text-main); }
+        
+    </style>
+</head>
+<body>
+
+    <!-- Loader -->
+    <div class="loading-overlay" id="loader">
+        <div class="spinner"></div>
+        <p id="loader-text" style="font-weight:500;">Ma'lumotlar yuklanmoqda...</p>
+        <button id="retry-btn" onclick="fetchData()" style="display:none; margin-top:10px; padding:8px 16px; cursor:pointer;">Qayta urinish</button>
+    </div>
+
+    <!-- MODAL -->
+    <div class="modal-overlay" id="infoModal" onclick="closeModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <button class="modal-close" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+            <div id="modalBody">
+                <!-- Dynamic Content -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="glass-header">
+        <div class="header-inner">
+            <div class="brand-box">
+                <h1><i class="fa-solid fa-mobile-screen-button"></i> <span id="t-brand">To'lov Tashkilotlari Ilovalari Tahlili</span></h1>
+                <div>
+                    <span class="source-badge" id="t-subtitle">To'lov Tashkilotlari Ilovalari Reytingi</span>
+                </div>
+            </div>
+            <div style="display: flex; gap: 8px;">
+                <button class="btn-icon" onclick="toggleTheme()"><i class="fa-solid fa-moon"></i></button>
+                <div style="display:flex; border:1px solid var(--border); border-radius:8px; overflow:hidden;">
+                    <button class="btn-icon active-lang" onclick="setLang('uz')" id="btn-uz">UZ</button>
+                    <button class="btn-icon" onclick="setLang('ru')" id="btn-ru">RU</button>
+                    <button class="btn-icon" onclick="setLang('en')" id="btn-en">EN</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        
+        <!-- Mobile Toggle Button -->
+        <button class="mobile-filter-btn" onclick="toggleSidebar()">
+            <i class="fa-solid fa-bars-staggered"></i> <span id="t-mobile-menu">Filtrlar va Ma'lumotlar</span>
+        </button>
+
+        <!-- Sidebar -->
+        <aside class="sidebar" id="main-sidebar">
+            <div class="sidebar-inner">
+                <div class="card">
+                    <h3><i class="fa-solid fa-filter"></i> <span id="t-filter">Filtrlash</span></h3>
+                    
+                    <label id="l-period" style="font-size:0.8rem; color:var(--text-secondary)">Davr</label>
+                    <select id="filter-period" class="form-select" onchange="renderDashboard()">
+                        <!-- JS fills this -->
+                    </select>
+
+                    <label id="l-bank" style="font-size:0.8rem; color:var(--text-secondary)">Tashkilotni tanlang</label>
+                    <select id="filter-bank" class="form-select" onchange="renderDashboard()">
+                        <option value="">— Barchasi —</option>
+                        <!-- JS fills this -->
+                    </select>
+
+                    <button class="btn-icon" style="width:100%; border-radius:8px; gap:8px;" onclick="resetFilters()">
+                        <i class="fa-solid fa-rotate-right"></i> <span id="t-reset">Tozalash</span>
+                    </button>
+                </div>
+
+                <div class="card">
+                    <h3><i class="fa-solid fa-chart-pie"></i> <span id="t-details">Batafsil Tahlil</span></h3>
+                    <div id="bank-info-header" style="margin-bottom: 10px;">
+                        <h4 id="details-bank-name" style="margin: 0; color: var(--primary);"></h4>
+                    </div>
+                    <div id="indicators-container" style="margin-top:10px;"></div>
+                </div>
+
+                <!-- Promo Card -->
+                <div class="card promo-card">
+                    <div class="promo-bg-circle"></div>
+                    <div style="position:relative; z-index:2; padding-top:10px;">
+                        <img src="https://snsratings.uz/static/media/logo.b58a119151d230b7d82af1dfaf415791.svg" class="promo-logo-img" alt="SNS Ratings">
+                        <div class="slogan-box" id="slogan-box">Standard and Sensitive Ratings</div>
+                        <div class="social-row">
+                            <a href="https://t.me/snsratings" target="_blank" class="social-btn"><i class="fa-brands fa-telegram"></i> Telegram</a>
+                            <a href="https://snsratings.uz/" target="_blank" class="social-btn"><i class="fa-solid fa-globe"></i> Web</a>
+                        </div>
+                        <p class="contact-info" id="t-poster-footer">To'liqroq ma'lumot olish uchun Reyting Agentligi hodimlariga murojaat qiling</p>
+                    </div>
+                </div>
+
+                <!-- Scale Table Card -->
+                <div class="card">
+                    <h4 style="margin:0 0 10px 0; font-size:1rem;"><i class="fa-solid fa-ruler-combined"></i> <span id="t-scale-title">Reyting Shkalasi</span></h4>
+                    <div class="scale-table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th id="th-scale-score">Ball</th>
+                                    <th id="th-scale-rating">Reyting</th>
+                                    <th id="th-scale-desc">Tavsif</th>
+                                </tr>
+                            </thead>
+                            <tbody id="scale-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="legal-disclaimer" id="t-disclaimer">
+                    Reyting bahosi — bu agentlikning fikri bo'lib, tasdiqlangan fakt emas.
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main>
+            <!-- KPI Aligned Row -->
+            <div class="kpi-aligned-row">
+                <!-- Left Group (2 columns on mobile) -->
+                <div class="kpi-group-left">
+                    <div class="stat-card">
+                        <div>
+                            <p id="t-kpi-top" style="font-size:0.85rem; color:var(--text-secondary); margin:0;">Eng Yuqori Ball</p>
+                            <h2 id="kpi-score" style="margin:5px 0; color:#166534;">0</h2>
+                            <small id="kpi-bank" style="color:var(--text-main); font-weight:500;">-</small>
+                        </div>
+                        <div class="stat-icon" style="background:rgba(22, 101, 52, 0.1); color:#166534;">
+                            <i class="fa-solid fa-trophy"></i>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div>
+                            <p id="t-kpi-avg" style="font-size:0.85rem; color:var(--text-secondary); margin:0;">O'rtacha Ball</p>
+                            <h2 id="kpi-avg" style="margin:5px 0; color:var(--primary);">0</h2>
+                            <small id="t-kpi-market" style="color:var(--text-secondary);">Bozor bo'yicha</small>
+                        </div>
+                        <div class="stat-icon" style="background:rgba(37, 99, 235, 0.1); color:var(--primary);">
+                            <i class="fa-solid fa-chart-line"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Group -->
+                <div class="kpi-group-right">
+                    <div class="stat-card">
+                        <div>
+                            <p id="t-kpi-count" style="font-size:0.85rem; color:var(--text-secondary); margin:0;">Tashkilotlar Soni</p>
+                            <h2 id="kpi-count" style="margin:5px 0; color:var(--warning);">0</h2>
+                            <small id="t-kpi-active" style="color:var(--text-secondary);">Faol ishtirokchilar</small>
+                        </div>
+                        <div class="stat-icon" style="background:rgba(245, 158, 11, 0.1); color:var(--warning);">
+                            <i class="fa-solid fa-building-columns"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="charts-row">
+                <div class="card">
+                    <h4 style="margin:0 0 15px 0;"><i class="fa-solid fa-arrow-trend-up"></i> <span id="t-chart-trend">Dinamika</span></h4>
+                    <div class="chart-container">
+                        <canvas id="trendChart"></canvas>
+                    </div>
+                </div>
+                <div class="card">
+                    <h4 style="margin:0 0 15px 0;"><i class="fa-solid fa-bullseye"></i> <span id="t-chart-radar">Asosiy Ko'rsatkichlar</span></h4>
+                    <div class="chart-container">
+                        <canvas id="radarChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="card">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap:wrap; gap:10px;">
+                    <h4 style="margin:0;"><i class="fa-solid fa-table"></i> <span id="t-main-table">Reyting Jadvali</span></h4>
+                    <button onclick="exportToExcel()" class="btn-icon" style="width:auto; padding:0 15px; font-size:0.85rem; gap:8px;">
+                        <i class="fa-solid fa-file-excel"></i> Excel
+                    </button>
+                </div>
+                <div class="table-responsive">
+                    <table id="ratingTable">
+                        <thead><!-- JS fills this --></thead>
+                        <tbody id="tableBody"><!-- JS fills this --></tbody>
+                    </table>
+                </div>
+                <div style="margin-top:10px; text-align:right; font-size:0.8rem; color:var(--text-secondary);" id="row-count"></div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        © 2026 Standard and Sensitive Ratings
+    </div>
+
+    <script>
+        // Data & Logic
+        const JSON_URL = "https://raw.githubusercontent.com/sunattagayev-cloud/Payment-organization-apps-rating/refs/heads/main/payment_org_apps_database.json";
+        
+        let fullDataObj = {}; 
+        let rawData = []; // Yakuniy natija
+        let appsUrlData = [];
+        let playMarketData = [];
+        let appStoreData = [];
+        let activityData = [];
+
+        let curLang = 'uz';
+        let trendChartInstance = null;
+        let radarChartInstance = null;
+        let sloganInterval = null;
+        let sortCol = 'Yakuniy ball';
+        let sortAsc = false;
+
+        const slogans = {
+            uz: ["Mijozlar ishonchi – eng oliy mukofot", "Raqamli to'lov xizmatlarida sifat standarti", "Ochiqlik va shaffoflik – bizning tamoyilimiz", "Har bir ilova muhim ahamiyatga ega", "To'lov xizmatlari sifatini birgalikda oshiramiz", "Professional yondashuv – barqaror rivojlanish garovi"],
+            ru: ["Доверие клиентов – высшая награда", "Стандарт качества в цифровых платежах", "Открытость и прозрачность – наш принцип", "Важен каждый отзыв", "Вместе повышаем качество платежных услуг", "Профессиональный подход – залог устойчивого развития"],
+            en: ["Customer trust is the highest reward", "Quality standard in digital payments", "Openness and transparency are our principles", "Every app detail matters", "Improving payment service quality together", "Professional approach - key to sustainable development"]
+        };
+
+        const scaleData = [
+            { r: '94-100', g: '(uz) AAA', c: 'grade-AAA', d: { uz:'Ideal', ru:'Идеально', en:'Ideal' } },
+            { r: '88-94',  g: '(uz) AA',  c: 'grade-AA',  d: { uz:'Namunali', ru:'Образцово', en:'Exemplary' } },
+            { r: '82-88',  g: '(uz) A',   c: 'grade-A',   d: { uz:'Deyarli namunali', ru:'Почти образцово', en:'Almost exemplary' } },
+            { r: '76-82',  g: '(uz) BBB', c: 'grade-BBB', d: { uz:'Juda yaxshi', ru:'Очень хорошо', en:'Very good' } },
+            { r: '70-76',  g: '(uz) BB',  c: 'grade-BB',  d: { uz:'Yaxshiroq', ru:'Лучше', en:'Better' } },
+            { r: '64-70',  g: '(uz) B',   c: 'grade-B',   d: { uz:'Yaxshi', ru:'Хорошо', en:'Good' } },
+            { r: '58-64',  g: '(uz) CCC', c: 'grade-CCC', d: { uz:'Deyarli yaxshi', ru:'Почти хорошо', en:'Almost good' } },
+            { r: '52-58',  g: '(uz) CC',  c: 'grade-CC',  d: { uz:'Qoniqarli', ru:'Удовлетворительно', en:'Satisfactory' } },
+            { r: '46-52',  g: '(uz) C',   c: 'grade-C',   d: { uz:'Deyarli qoniqarli', ru:'Почти удовлетворительно', en:'Almost satisfactory' } },
+            { r: '0-46',   g: '(uz) D',   c: 'grade-D',   d: { uz:'Qoniqarsiz', ru:'Неудовлетворительно', en:'Unsatisfactory' } },
+        ];
+
+        const i18n = {
+            uz: {
+                title: "To'lov Tashkilotlari Ilovalari Tahlili", sub: "To'lov tashkilotlari Ilovalari reytingi",
+                filter: "Filtrlash", period: "Davr", bankSelect: "Tashkilotni tanlang", reset: "Tozalash",
+                details: "Batafsil Tahlil", selMsg: "Ma'lumotlar ko'rish uchun filtrlarni tanlang", all: "— Barchasi —",
+                kpiTop: "Eng Yuqori Ball", kpiAvg: "O'rtacha Ball", kpiCount: "Tashkilotlar Soni",
+                kpiMarket: "Bozor bo'yicha", kpiActive: "Faol ishtirokchilar",
+                chartTrend: "Dinamika", chartRadar: "Asosiy Ko'rsatkichlar",
+                tableHeader: "Reyting Jadvali",
+                thBank: "Tashkilot", thPeriod: "Davr", thScore: "Yakuniy ball", thGrade: "Reyting",
+                p1_title: "Google Play", p2_title: "App Store", p3_title: "Faollik", p4_title: "Yakuniy ball",
+                p1_chart: ["Google Play", "(Android)"], p2_chart: ["App Store", "(iOS)"], p3_chart: ["Faollik", "(Activity)"],
+                final: "Yakuniy ball:",
+                posterFooter: "To'liqroq ma'lumot olish uchun Reyting Agentligi hodimlariga murojaat qiling",
+                marketAvg: "Bozor bo'yicha o'rtacha",
+                scaleTitle: "Reyting Shkalasi", thRange: "Ball", thRating: "Reyting", thDesc: "Tavsif",
+                disclaimer: "Reyting bahosi — bu agentlikning fikri bo'lib, tasdiqlangan fakt emas. Biz investitsiya bo'yicha tavsiyalar bermaymiz.",
+                mobileMenu: "Filtrlar va Ma'lumotlar",
+                appLinks: "Ilovalar havolalari",
+                modalKeys: {
+                    "Gorizontal baho": "Gorizontal baho", "Vertikal baho": "Vertikal baho", "Jami": "Jami",
+                    "Ilova nomi": "Ilova nomi", "Ilova yoshi bo'yicha ball": "Ilova yoshi bo'yicha ball",
+                    "Yuklanishlar soni bo'yicha ball": "Yuklanishlar soni bo'yicha ball", "Kunlik izohlar soni bo'yicha ball": "Kunlik izohlar soni bo'yicha ball",
+                    "Izohlar salmog'i bo'yicha ball": "Izohlar salmog'i bo'yicha ball", "Ilova faoligi bo'yicha yakuniy ball": "Ilova faolligi bo'yicha yakuniy ball",
+                    "1": "1 Yulduz", "2": "2 Yulduz", "3": "3 Yulduz", "4": "4 Yulduz", "5": "5 Yulduz", "Yakuniy ball": "Yakuniy ball"
+                }
+            },
+            ru: {
+                title: "Анализ Приложений Платежных Организаций", sub: "Рейтинг Приложений Платежных Организаций",
+                filter: "Фильтр", period: "Период", bankSelect: "Выберите организацию", reset: "Сброс",
+                details: "Детальный Анализ", selMsg: "Выберите фильтры для просмотра данных", all: "— Все —",
+                kpiTop: "Высший Балл", kpiAvg: "Средний Балл", kpiCount: "Кол-во организаций",
+                kpiMarket: "По рынку", kpiActive: "Активные участники",
+                chartTrend: "Динамика", chartRadar: "Основные Показатели",
+                tableHeader: "Таблица Рейтинга",
+                thBank: "Организация", thPeriod: "Период", thScore: "Итоговый балл", thGrade: "Рейтинг",
+                p1_title: "Google Play", p2_title: "App Store", p3_title: "Активность", p4_title: "Итоговый балл",
+                p1_chart: ["Google Play", "(Android)"], p2_chart: ["App Store", "(iOS)"], p3_chart: ["Активность", "(Activity)"],
+                final: "Итоговый балл:",
+                posterFooter: "Для получения более подробной информации обратитесь к сотрудникам Рейтингового агентства",
+                marketAvg: "Среднее по рынку",
+                scaleTitle: "Шкала Рейтинга", thRange: "Балл", thRating: "Рейтинг", thDesc: "Описание",
+                disclaimer: "Рейтинговая оценка — это мнение агентства, а не установленный факт.",
+                mobileMenu: "Фильтры и Информация",
+                appLinks: "Ссылки на приложения",
+                modalKeys: {
+                    "Gorizontal baho": "Горизонтальная оценка", "Vertikal baho": "Вертикальная оценка", "Jami": "Всего",
+                    "Ilova nomi": "Название приложения", "Ilova yoshi bo'yicha ball": "Балл по возрасту приложения",
+                    "Yuklanishlar soni bo'yicha ball": "Балл по кол-ву загрузок", "Kunlik izohlar soni bo'yicha ball": "Балл по ежедневным отзывам",
+                    "Izohlar salmog'i bo'yicha ball": "Балл по весу отзывов", "Ilova faoligi bo'yicha yakuniy ball": "Итоговый балл активности",
+                    "1": "1 Звезда", "2": "2 Звезды", "3": "3 Звезды", "4": "4 Звезды", "5": "5 Звезд", "Yakuniy ball": "Итоговый балл"
+                }
+            },
+            en: {
+                title: "Payment Organization Apps Analysis", sub: "Payment Organizations Apps Rating",
+                filter: "Filters", period: "Period", bankSelect: "Select Organization", reset: "Reset",
+                details: "Detailed Analysis", selMsg: "Select filters to view data", all: "— All —",
+                kpiTop: "Top Score", kpiAvg: "Average Score", kpiCount: "Organization Count",
+                kpiMarket: "Market average", kpiActive: "Active participants",
+                chartTrend: "Dynamics", chartRadar: "main Indicators",
+                tableHeader: "Rating Table",
+                thBank: "Organization", thPeriod: "Period", thScore: "Final Score", thGrade: "Grade",
+                p1_title: "Google Play", p2_title: "App Store", p3_title: "Activity", p4_title: "Final Score",
+                p1_chart: ["Google Play", "(Android)"], p2_chart: ["App Store", "(iOS)"], p3_chart: ["Activity", "(Activity)"],
+                final: "Final Score:",
+                posterFooter: "Contact Rating Agency staff for more detailed information",
+                marketAvg: "Market Average",
+                scaleTitle: "Rating Scale", thRange: "Score", thRating: "Grade", thDesc: "Description",
+                disclaimer: "A credit rating is an opinion of the agency, not a statement of fact.",
+                mobileMenu: "Filters and Info",
+                appLinks: "App Links",
+                modalKeys: {
+                    "Gorizontal baho": "Horizontal Score", "Vertikal baho": "Vertical Score", "Jami": "Total",
+                    "Ilova nomi": "App Name", "Ilova yoshi bo'yicha ball": "App Age Score",
+                    "Yuklanishlar soni bo'yicha ball": "Download Count Score", "Kunlik izohlar soni bo'yicha ball": "Daily Reviews Score",
+                    "Izohlar salmog'i bo'yicha ball": "Review Weight Score", "Ilova faoligi bo'yicha yakuniy ball": "Final Activity Score",
+                    "1": "1 Star", "2": "2 Stars", "3": "3 Stars", "4": "4 Stars", "5": "5 Stars", "Yakuniy ball": "Final Score"
+                }
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchData();
+            startSlogans();
+            renderScaleTable();
+        });
+
+        function toggleSidebar() {
+            document.getElementById('main-sidebar').classList.toggle('active');
+        }
+
+        async function fetchData() {
+            document.getElementById('loader').style.display = 'flex';
+            document.getElementById('retry-btn').style.display = 'none';
+            try {
+                let fetchUrl = JSON_URL.replace('refs/heads/', ''); 
+                const response = await fetch(fetchUrl);
+                if (!response.ok) throw new Error("HTTP error");
+                
+                const text = await response.text();
+                const cleanText = text.replace(/:\s*NaN/g, ': 0').replace(/:\s*null/g, ': 0');
+                
+                fullDataObj = JSON.parse(cleanText);
+                
+                if (fullDataObj) {
+                    appsUrlData = fullDataObj["Apps_url"] || [];
+                    playMarketData = fullDataObj["Play Market"] || [];
+                    appStoreData = fullDataObj["App Store"] || [];
+                    activityData = fullDataObj["Ilovalar faolligi"] || [];
+                    rawData = fullDataObj["Yakuniy natija"] || [];
+                    processData();
+                } else {
+                    throw new Error("Ma'lumotlar tuzilmasi noto'g'ri");
+                }
+            } catch (err) {
+                console.warn("Fetch failed: " + err.message);
+                document.getElementById('loader-text').innerText = "Ma'lumot yuklab bo'lmadi (" + err.message + ")";
+                document.getElementById('retry-btn').style.display = 'block';
+            }
+        }
+
+        function processData() {
+            rawData = rawData.map(item => ({
+                ...item,
+                "Google Play": parseFloat(item["Google Play"]) || 0,
+                "App Store": parseFloat(item["App Store"]) || 0,
+                "Faollik": parseFloat(item["Faollik"]) || 0,
+                "Yakuniy ball": parseFloat(item["Yakuniy ball"]) || 0
+            })).filter(x => x["Yakuniy ball"] > 0);
+
+            document.getElementById('loader').style.display = 'none';
+            initFilters();
+            renderDashboard();
+        }
+
+        function initFilters() {
+            const periods = [...new Set(rawData.map(d => d['Davr']))].sort().reverse();
+            const pSel = document.getElementById('filter-period');
+            pSel.innerHTML = `<option value="">${i18n[curLang].all}</option>`;
+            periods.forEach(p => pSel.add(new Option(p, p)));
+            if(periods.length) pSel.selectedIndex = 1; 
+
+            const banks = [...new Set(rawData.map(d => d['Tashkilot nomi']))].sort();
+            const bSel = document.getElementById('filter-bank');
+            bSel.innerHTML = `<option value="">${i18n[curLang].all}</option>`;
+            banks.forEach(b => bSel.add(new Option(b, b)));
+        }
+
+        function getFilteredData() {
+            const period = document.getElementById('filter-period').value;
+            const bank = document.getElementById('filter-bank').value;
+            return rawData.filter(d => (!period || d['Davr'] === period) && (!bank || d['Tashkilot nomi'] === bank));
+        }
+
+        function renderDashboard() {
+            updateFixedLabels();
+            renderScaleTable(); 
+            const data = getFilteredData();
+            updateKPIs(data);
+            showBankDetails(data);
+            renderCharts();
+            renderTable(data);
+        }
+
+        function updateFixedLabels() {
+            const t = i18n[curLang];
+            const mapping = {
+                't-brand': t.title, 't-subtitle': t.sub, 't-filter': t.filter,
+                'l-period': t.period, 'l-bank': t.bankSelect, 't-reset': t.reset,
+                't-details': t.details, 't-kpi-top': t.kpiTop, 't-kpi-avg': t.kpiAvg,
+                't-kpi-count': t.kpiCount, 't-kpi-market': t.kpiMarket, 't-kpi-active': t.kpiActive,
+                't-chart-trend': t.chartTrend, 't-chart-radar': t.chartRadar, 't-main-table': t.tableHeader,
+                't-poster-footer': t.posterFooter, 't-scale-title': t.scaleTitle,
+                'th-scale-score': t.thRange, 'th-scale-rating': t.thRating, 'th-scale-desc': t.thDesc,
+                't-disclaimer': t.disclaimer, 't-mobile-menu': t.mobileMenu
+            };
+            for (const [id, text] of Object.entries(mapping)) {
+                const el = document.getElementById(id);
+                if (el) el.innerText = text;
+            }
+        }
+
+        function renderScaleTable() {
+            const tbody = document.getElementById('scale-tbody');
+            if(!tbody) return;
+            let html = "";
+            scaleData.forEach(s => {
+                html += `<tr>
+                    <td style="white-space:nowrap">${s.r}</td>
+                    <td><span class="scale-badge-small ${s.c}">${s.g}</span></td>
+                    <td>${s.d[curLang]}</td>
+                </tr>`;
+            });
+            tbody.innerHTML = html;
+        }
+
+        function updateKPIs(data) {
+            if(data.length > 0) {
+                let maxScore = 0, maxBank = "", sum = 0;
+                data.forEach(d => {
+                    if(d['Yakuniy ball'] > maxScore) { maxScore = d['Yakuniy ball']; maxBank = d['Tashkilot nomi']; }
+                    sum += d['Yakuniy ball'];
+                });
+                document.getElementById('kpi-score').innerText = maxScore.toFixed(2);
+                document.getElementById('kpi-bank').innerText = maxBank;
+                document.getElementById('kpi-avg').innerText = (sum / data.length).toFixed(2);
+                
+                const uniqueCount = new Set(data.map(d => d['Tashkilot nomi'])).size;
+                document.getElementById('kpi-count').innerText = uniqueCount;
+            } else {
+                ['kpi-score','kpi-avg','kpi-count'].forEach(id => document.getElementById(id).innerText = "0");
+                document.getElementById('kpi-bank').innerText = "-";
+            }
+        }
+
+        function showBankDetails(data) {
+            const container = document.getElementById('indicators-container');
+            const header = document.getElementById('details-bank-name');
+            const t = i18n[curLang];
+            const selectedBank = document.getElementById('filter-bank').value;
+            let displayTitle = t.marketAvg;
+            let phoneHtml = "";
+
+            if (selectedBank) displayTitle = selectedBank;
+            header.innerText = displayTitle;
+            let avg = { gp:0, as:0, act:0, final:0, count:0 };
+            data.forEach(d => {
+                avg.gp += d["Google Play"];
+                avg.as += d["App Store"];
+                avg.act += d["Faollik"];
+                avg.final += d["Yakuniy ball"];
+                avg.count++;
+            });
+
+            if (avg.count === 0) {
+                container.innerHTML = `<p style="text-align:center;color:var(--text-secondary)">No Data</p>`;
+                return;
+            }
+
+            const f = (val) => (val / avg.count).toFixed(1);
+            const items = [
+                { l: t.p1_title, v: f(avg.gp), c: "#3b82f6" }, 
+                { l: t.p2_title, v: f(avg.as), c: "#8b5cf6" }, 
+                { l: t.p3_title, v: f(avg.act), c: "#10b981" }, 
+            ];
+
+            let html = phoneHtml;
+            items.forEach(i => {
+                html += `
+                <div class="ind-item">
+                    <div class="ind-head"><span>${i.l}</span><strong>${i.v}</strong></div>
+                    <div class="progress-track"><div class="progress-fill" style="width:${Math.min(i.v, 100)}%; background:${i.c}"></div></div>
+                </div>`;
+            });
+            html += `<div style="margin-top:15px; padding:10px; background:var(--bg-body); border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-weight:600; color:var(--text-secondary)">${t.final}</span>
+                <span style="font-weight:bold; font-size:1.1rem; color:var(--primary)">${(avg.final/avg.count).toFixed(2)}</span>
+            </div>`;
+            container.innerHTML = html;
+        }
+
+        function renderCharts() {
+            const isDark = document.body.classList.contains('dark-mode');
+            const colorTxt = isDark ? '#cbd5e1' : '#475569';
+            const colorGrid = isDark ? '#334155' : '#e2e8f0';
+            const t = i18n[curLang];
+            const selectedBank = document.getElementById('filter-bank').value;
+            const trendData = rawData.filter(d => !selectedBank || d['Tashkilot nomi'] === selectedBank);
+            
+            // Trend
+            const periods = {};
+            trendData.forEach(d => {
+                if(!periods[d['Davr']]) periods[d['Davr']] = {sum:0, cnt:0};
+                periods[d['Davr']].sum += d['Yakuniy ball'];
+                periods[d['Davr']].cnt++;
+            });
+            const keys = Object.keys(periods).sort().slice(-12);
+            const vals = keys.map(k => (periods[k].sum / periods[k].cnt).toFixed(2));
+
+            if(trendChartInstance) trendChartInstance.destroy();
+            trendChartInstance = new Chart(document.getElementById('trendChart'), {
+                type: 'line',
+                data: {
+                    labels: keys,
+                    datasets: [{ label: t.kpiAvg, data: vals, borderColor: '#2563eb', backgroundColor: 'rgba(37, 99, 235, 0.1)', fill: true, tension: 0.3 }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    scales: {
+                        x: { ticks:{color:colorTxt}, grid:{display:false} },
+                        y: { ticks:{color:colorTxt}, grid:{color:colorGrid}, min:40, max:100 }
+                    },
+                    plugins: { legend: {display:false} }
+                }
+            });
+
+            // Radar
+            const currentData = getFilteredData();
+            let gp=0, as=0, act=0, count=0;
+            currentData.forEach(d => {
+                gp += d["Google Play"];
+                as += d["App Store"];
+                act += d["Faollik"];
+                count++;
+            });
+            const radarVals = count ? [gp/count, as/count, act/count] : [0,0,0];
+            const rLabels = [t.p1_chart, t.p2_chart, t.p3_chart];
+
+            if(radarChartInstance) radarChartInstance.destroy();
+            radarChartInstance = new Chart(document.getElementById('radarChart'), {
+                type: 'radar',
+                data: {
+                    labels: rLabels,
+                    datasets: [{ label: 'Avg', data: radarVals, backgroundColor: 'rgba(16, 185, 129, 0.2)', borderColor: '#10b981', pointBackgroundColor: '#10b981' }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: {color: colorGrid}, grid: {color: colorGrid},
+                            pointLabels: { color: colorTxt, font:{size:11}, callback: function(value) { return value } },
+                            suggestedMin: 40, suggestedMax: 100
+                        }
+                    },
+                    plugins: { legend: {display:false} }
+                }
+            });
+        }
+
+        function getGradeInfo(score) {
+            if (score >= 94) return { cls: 'grade-AAA', label: 'AAA' };
+            if (score >= 88) return { cls: 'grade-AA', label: 'AA' };
+            if (score >= 82) return { cls: 'grade-A', label: 'A' };
+            if (score >= 76) return { cls: 'grade-BBB', label: 'BBB' };
+            if (score >= 70) return { cls: 'grade-BB', label: 'BB' };
+            if (score >= 64) return { cls: 'grade-B', label: 'B' };
+            if (score >= 58) return { cls: 'grade-CCC', label: 'CCC' };
+            if (score >= 52) return { cls: 'grade-CC', label: 'CC' };
+            if (score >= 46) return { cls: 'grade-C', label: 'C' };
+            return { cls: 'grade-D', label: 'D' };
+        }
+
+        function renderTable(data) {
+            const table = document.getElementById('ratingTable');
+            const thead = table.querySelector('thead');
+            const tbody = document.getElementById('tableBody');
+            const t = i18n[curLang];
+
+            thead.innerHTML = `
+                <tr>
+                    <th onclick="sortTable('Tashkilot nomi')" id="th-bank">${t.thBank} <i class="fa-solid fa-sort"></i></th>
+                    <th onclick="sortTable('Davr')" class="text-center" id="th-period">${t.thPeriod} <i class="fa-solid fa-sort"></i></th>
+                    <th onclick="sortTable('Google Play')" class="text-center">${t.p1_chart[0]} <i class="fa-solid fa-sort"></i></th>
+                    <th onclick="sortTable('App Store')" class="text-center">${t.p2_chart[0]} <i class="fa-solid fa-sort"></i></th>
+                    <th onclick="sortTable('Faollik')" class="text-center">${t.p3_chart[0]} <i class="fa-solid fa-sort"></i></th>
+                    <th onclick="sortTable('Yakuniy ball')" class="text-center" id="th-score">${t.thScore} <i class="fa-solid fa-sort"></i></th>
+                    <th onclick="sortTable('Reyting')" class="text-center" id="th-grade">${t.thGrade} <i class="fa-solid fa-sort"></i></th>
+                </tr>
+            `;
+            
+            data.sort((a,b) => {
+                let va = a[sortCol], vb = b[sortCol];
+                if(typeof va === 'string') { va=va.toLowerCase(); vb=vb.toLowerCase(); }
+                if(va < vb) return sortAsc ? -1 : 1;
+                if(va > vb) return sortAsc ? 1 : -1;
+                return 0;
+            });
+
+            let html = "";
+            data.forEach(row => {
+                const score = row['Yakuniy ball'];
+                const gradeInfo = getGradeInfo(score);
+                const ratingTxt = row['Reyting'] || `(uz) ${gradeInfo.label}`;
+                // Escaping strings for onclick
+                const safeBankName = row['Tashkilot nomi'].replace(/'/g, "\\'");
+                const safePeriod = row['Davr'];
+
+                html += `<tr>
+                    <td class="bank-name-cell" onclick="openBankModal('${safeBankName}')" style="font-weight:600">${row['Tashkilot nomi']}</td>
+                    <td class="text-center">${row['Davr']}</td>
+                    <td class="text-center clickable-cell" onclick="openMetricModal('Play Market', '${safeBankName}', '${safePeriod}')" title="Batafsil ko'rish">${row["Google Play"].toFixed(1)}</td>
+                    <td class="text-center clickable-cell" onclick="openMetricModal('App Store', '${safeBankName}', '${safePeriod}')" title="Batafsil ko'rish">${row["App Store"].toFixed(1)}</td>
+                    <td class="text-center clickable-cell" onclick="openMetricModal('Faollik', '${safeBankName}', '${safePeriod}')" title="Batafsil ko'rish">${row["Faollik"].toFixed(1)}</td>
+                    <td class="text-center" style="font-weight:bold; color:var(--primary);">${score.toFixed(2)}</td>
+                    <td class="text-center"><span class="rating-badge ${gradeInfo.cls}">${ratingTxt}</span></td>
+                </tr>`;
+            });
+            tbody.innerHTML = html;
+            document.getElementById('row-count').innerText = `Total: ${data.length}`;
+        }
+
+        function sortTable(key) {
+            if(sortCol === key) sortAsc = !sortAsc;
+            else { sortCol = key; sortAsc = false; }
+            renderDashboard();
+        }
+
+        // --- MODAL LOGIC ---
+
+        function openBankModal(bankName) {
+            const modalBody = document.getElementById('modalBody');
+            const bankData = appsUrlData.find(b => b['Tashkilot nomi'] === bankName);
+            
+            if (!bankData) {
+                alert("Tashkilot ma'lumotlari topilmadi");
+                return;
+            }
+
+            const logo = bankData.Logo_Url ? bankData.Logo_Url : 'https://placehold.co/100x100?text=' + bankName.charAt(0);
+            
+            let html = `
+                <div class="modal-header">
+                    <img src="${logo}" class="modal-logo" onerror="this.src='https://placehold.co/100x100?text=Org'">
+                    <div class="modal-title">
+                        <h3>${bankName}</h3>
+                        <span>${i18n[curLang].appLinks}</span>
+                    </div>
+                </div>
+                <div class="modal-links">
+            `;
+
+            if(bankData["Play Market url"]) {
+                html += `<a href="${bankData["Play Market url"]}" target="_blank" class="modal-link-btn link-google">
+                    <i class="fa-brands fa-google-play"></i> Google Play
+                </a>`;
+            }
+            if(bankData["App Store url"]) {
+                html += `<a href="${bankData["App Store url"]}" target="_blank" class="modal-link-btn link-apple">
+                    <i class="fa-brands fa-app-store-ios"></i> App Store
+                </a>`;
+            }
+            
+            html += `</div>`;
+            modalBody.innerHTML = html;
+            document.getElementById('infoModal').classList.add('active');
+        }
+
+        function openMetricModal(type, bankName, period) {
+            const modalBody = document.getElementById('modalBody');
+            let sourceArray = [];
+            if(type === 'Play Market') sourceArray = playMarketData;
+            else if(type === 'App Store') sourceArray = appStoreData;
+            else if(type === 'Faollik') sourceArray = activityData;
+
+            const record = sourceArray.find(d => d['Tashkilot nomi'] === bankName && d['Davr'] === period);
+
+            if (!record) {
+                alert("Bu davr uchun ma'lumot topilmadi.");
+                return;
+            }
+
+            let titleHTML = `<div class="modal-header"><div class="modal-title"><h3>${bankName}</h3><span>${type} (${period})</span></div></div>`;
+            let contentHTML = `<div style="padding-top:10px;">`;
+
+            // Display key-value pairs with translation
+            const dict = i18n[curLang].modalKeys;
+
+            for (const [key, value] of Object.entries(record)) {
+                if(key === 'Tashkilot nomi' || key === 'Davr') continue;
+                
+                // Get translated label or fallback to original key
+                let label = dict[key] || key;
+                let displayValue = value;
+
+                // Icons for stars (keys 1, 2, 3, 4, 5)
+                if(['1','2','3','4','5'].includes(key)) {
+                    label = label + ' <i class="fa-solid fa-star" style="color:#fbbf24; font-size:0.8em"></i>';
+                }
+                
+                contentHTML += `
+                    <div class="detail-row">
+                        <span class="detail-label">${label}</span>
+                        <span class="detail-value">${displayValue}</span>
+                    </div>
+                `;
+            }
+            contentHTML += `</div>`;
+
+            modalBody.innerHTML = titleHTML + contentHTML;
+            document.getElementById('infoModal').classList.add('active');
+        }
+
+        function closeModal(e) {
+            if(e) e.preventDefault();
+            document.getElementById('infoModal').classList.remove('active');
+        }
+
+        function startSlogans() {
+            const box = document.getElementById('slogan-box');
+            let idx = 0;
+            const update = () => {
+                box.classList.remove('slogan-visible');
+                setTimeout(() => {
+                    const list = slogans[curLang]; 
+                    if(list && list.length > 0) {
+                        box.innerText = list[idx % list.length];
+                        box.classList.add('slogan-visible');
+                        idx++;
+                    }
+                }, 500);
+            };
+            update();
+            setInterval(update, 4000);
+        }
+
+        function setLang(lang) {
+            curLang = lang;
+            document.querySelectorAll('.active-lang').forEach(el=>el.classList.remove('active-lang'));
+            document.getElementById('btn-'+lang).classList.add('active-lang');
+            const t = i18n[lang];
+            const bSelect = document.getElementById('filter-bank');
+            if(bSelect && bSelect.options.length > 0) bSelect.options[0].text = t.all;
+            const pSelect = document.getElementById('filter-period');
+            if(pSelect && pSelect.options.length > 0) pSelect.options[0].text = t.all;
+            renderDashboard();
+        }
+
+        function resetFilters() {
+            const pSel = document.getElementById('filter-period');
+            if(pSel.options.length > 1) pSel.selectedIndex = 1; else pSel.selectedIndex = 0;
+            document.getElementById('filter-bank').value = "";
+            renderDashboard();
+        }
+
+        function toggleTheme() { document.body.classList.toggle('dark-mode'); renderDashboard(); }
+        function exportToExcel() {
+            const table = document.getElementById('ratingTable');
+            const wb = XLSX.utils.table_to_book(table, {sheet: "Ratings"});
+            XLSX.writeFile(wb, `Payment_Apps_Rating_${new Date().toISOString().slice(0,10)}.xlsx`);
+        }
+    </script>
+</body>
+</html>
